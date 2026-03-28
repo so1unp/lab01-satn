@@ -1,6 +1,6 @@
 ## Plan: Refactor Clean Code Simple en C
 
-Objetivo: mantener la funcionalidad actual y el cumplimiento de la consigna, mejorando legibilidad con cambios chicos, locales y fáciles de entender para estudiantes.
+Objetivo: mantener la funcionalidad actual y el cumplimiento de la consigna, mejorando legibilidad con cambios chicos, locales y fáciles de entender.
 
 **Pasos**
 1. Fase 1: baseline y criterios de no regresión.
@@ -18,6 +18,7 @@ Objetivo: mantener la funcionalidad actual y el cumplimiento de la consigna, mej
 13. Recompilar y verificar que no aparezcan warnings nuevos por el refactor.
 14. Repetir pruebas funcionales del README y roundtrip con archivo.
 15. Comparar resultado final con baseline para confirmar cero regresiones.
+16. Una vez verificado se agregan Comentarios para mejorar legibilidad del codigo.
 
 **Archivos relevantes**
 - encrypt.c — reducir duplicación y mejorar claridad con helper simple.
@@ -36,4 +37,4 @@ Objetivo: mantener la funcionalidad actual y el cumplimiento de la consigna, mej
 **Decisiones**
 - Incluido: legibilidad, consistencia de errores, eliminación de duplicación.
 - Excluido: optimizaciones avanzadas, modularización compleja, cambios criptográficos, cambios de interfaz.
-- Regla guía: código simple, didáctico y mantenible para nivel de Algoritmos/Programación 1.
+- Regla guía: código simple, didáctico y mantenible.
