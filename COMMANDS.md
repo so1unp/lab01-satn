@@ -244,7 +244,12 @@ git add -A
 git commit -m "descripción de cambios"
 git push
 ```
-
+---
+Para guardar la clave si usamos https , se puede usar credential.helper store o si tenemos un token:
+```
+git remote set-url origin https://MiyoBran:ghp_xxxxx@github.com/usuario/nuevo-repo.git
+```
+---
 ---
 
 **Última actualización:** Marzo 28, 2026  
