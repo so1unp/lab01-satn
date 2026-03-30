@@ -230,3 +230,48 @@ diff topsecret.txt recuperado.txt
 # 4) Ver salida en terminal desde archivo encriptado
 ./bin/decrypt -f -t prueba.enc
 ```
+
+## 🔎 Auditoría Main Branch
+
+### Error encontrado
+
+En `main`, `decrypt` puede fallar con:
+
+`Error: datos encriptados corruptos (bloque incompleto)`
+
+incluso cuando la entrada es válida, si los bytes llegan fragmentados por `stdin`.
+
+Causa técnica: la implementación de `decrypt` en `main` asume que `read()` devuelve
+siempre un bloque completo de 8 bytes, pero en pipes/streams `read()` puede devolver
+lecturas parciales sin que sea error.
+
+### Cómo replicarlo
+
+```bash
+git checkout main
+make clean && make
+
+./bin/encrypt hola > /tmp/main_stream.enc
+
+(for i in $(seq 0 31); do
+  dd if=/tmp/main_stream.enc bs=1 count=1 skip=$i status=none
+  sleep 0.003
+done) | ./bin/decrypt
+
+echo "exit=$?"
+```
+
+Resultado esperado en `main` (bug): error de bloque incompleto y `exit=1`.
+
+### Sugerencia de arreglo mínimo (sin refactor completo)
+
+Si se decide mantener `main` sin incorporar todo el refactor de CLI:
+
+1. Cambiar el bucle de lectura en `decrypt.c` para acumular bytes hasta completar
+   8 bytes por bloque.
+2. Tratar `EOF` con `total_read == 0` como fin normal.
+3. Recién si `EOF` llega con `0 < total_read < 8`, reportar bloque incompleto.
+4. Mantener la escritura de solo el byte real (índice 7) por cada bloque completo.
+
+Con ese ajuste puntual, `main` quedaría robusto respecto al comportamiento esperado
+de `read()` en streams.
