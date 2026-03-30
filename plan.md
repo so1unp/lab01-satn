@@ -122,3 +122,111 @@ if (bytesRead < 0) {
  * Retorna: 0 en éxito, -1 en error
  */
 ```
+
+---
+
+## 🧭 Mejoras de Refactor para CLI de `encrypt`/`decrypt` (viable)
+
+Estas mejoras son viables sin romper el enunciado de [README.md](README.md),
+manteniendo el uso de `read()`, `write()`, `rand()`, `srand()` y `perror()`.
+
+- [x] Agregar flags en `encrypt` y `decrypt` para modo archivo:
+  - `-f` o `--file`: indica entrada/salida por archivos.
+  - Implementar parsing robusto de argumentos con validaciones y errores claros.
+  - Mantener compatibilidad con el comportamiento actual por `stdin`/`stdout`.
+- [x] Definir reglas de nombres por defecto para salida:
+  - Si no se especifica archivo de salida, generar nombre automáticamente a partir
+    del archivo de entrada.
+  - En modo `-f`, primer parámetro: archivo de entrada; segundo parámetro
+    opcional: archivo de salida.
+  - Ejemplo sugerido:
+    - `encrypt -f input.txt` -> `input.enc`
+    - `decrypt -f test-archivo.enc` -> `test-archivo.txt`
+- [x] Agregar modos explícitos de salida para `decrypt`:
+  - `-t` o `--terminal`: mostrar resultado por terminal (`stdout`).
+  - `-w` o `--write`: escribir resultado a archivo.
+  - Casos esperados:
+    - `bin/decrypt -f -t test-archivo.enc`
+    - `bin/decrypt -f -w test-archivo.enc test-decrypt.txt`
+    - Si falta salida en `-w`, usar nombre por defecto derivado.
+- [x] Incorporar mensajes de error y ayuda de uso:
+  - Validar cantidad y combinación de argumentos por flag.
+  - Si `-f` recibe argumentos inválidos o insuficientes, mostrar error de uso.
+  - Usar mensajes consistentes y orientados a corrección inmediata.
+- [x] Agregar `-h` y `--help` en ambos binarios:
+  - Incluir descripción breve, sintaxis y ejemplos de uso.
+  - Documentar comportamiento por defecto y en modo archivo.
+
+### Proceso de Refactoring (resumen)
+
+1. Se priorizó mantener compatibilidad con el flujo original por `stdin`/`stdout`.
+2. Se incorporó ayuda (`-h`, `--help`) primero, para hacer visible el contrato CLI antes de ampliar opciones.
+3. Se agregó modo archivo (`-f`) en ambos binarios con validaciones simples y mensajes de error claros.
+4. Se añadieron reglas de salida por defecto para reducir fricción de uso (`.enc` en `encrypt`, `.txt` en `decrypt`).
+5. En `decrypt` se agregaron modos explícitos de salida (`-t` y `-w`) para distinguir terminal vs archivo.
+6. Se evitó extraer utilidades compartidas a `utils.h/.c` en esta etapa para no modificar `Makefile`, y se documentó la duplicación intencional.
+
+## 📚 Documentación Final (CLI actual)
+
+### `encrypt`
+
+```bash
+# Ayuda
+./bin/encrypt -h
+./bin/encrypt --help
+
+# Encriptar mensaje literal (sale por stdout)
+./bin/encrypt "hola"
+
+# Encriptar desde stdin (sale por stdout)
+echo -n "hola" | ./bin/encrypt
+
+# Modo archivo con salida por defecto (.enc)
+./bin/encrypt -f topsecret.txt
+# genera: topsecret.enc
+
+# Modo archivo con salida explícita
+./bin/encrypt -f topsecret.txt test-archivo.enc
+```
+
+### `decrypt`
+
+```bash
+# Ayuda
+./bin/decrypt -h
+./bin/decrypt --help
+
+# Desencriptar desde stdin (flujo original)
+./bin/decrypt < topsecret.enc
+
+# Modo archivo con salida por defecto (.txt)
+./bin/decrypt -f test-archivo.enc
+# genera: test-archivo.txt
+
+# Modo archivo, mostrar por terminal
+./bin/decrypt -f -t test-archivo.enc
+
+# Modo archivo, escribir por defecto
+./bin/decrypt -f -w test-archivo.enc
+
+# Modo archivo, escribir en salida explícita
+./bin/decrypt -f -w test-archivo.enc test-decrypt.txt
+```
+
+### Pruebas rápidas recomendadas
+
+```bash
+# 1) Compilar
+make clean && make all
+
+# 2) Round-trip básico por pipe
+echo -n "hola" | ./bin/encrypt | ./bin/decrypt
+
+# 3) Round-trip por archivos con nombres explícitos
+./bin/encrypt -f topsecret.txt prueba.enc
+./bin/decrypt -f -w prueba.enc recuperado.txt
+diff topsecret.txt recuperado.txt
+
+# 4) Ver salida en terminal desde archivo encriptado
+./bin/decrypt -f -t prueba.enc
+```
