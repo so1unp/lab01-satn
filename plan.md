@@ -165,6 +165,8 @@ manteniendo el uso de `read()`, `write()`, `rand()`, `srand()` y `perror()`.
 4. Se añadieron reglas de salida por defecto para reducir fricción de uso (`.enc` en `encrypt`, `.txt` en `decrypt`).
 5. En `decrypt` se agregaron modos explícitos de salida (`-t` y `-w`) para distinguir terminal vs archivo.
 6. Se evitó extraer utilidades compartidas a `utils.h/.c` en esta etapa para no modificar `Makefile`, y se documentó la duplicación intencional.
+7. Refactor final de nombres: las versiones simplificadas pasaron a ser los archivos activos de compilación (`encrypt.c` y `decrypt.c`), y las anteriores se conservaron como respaldo (`encryptV2.0.c` y `decryptV2.0.c`).
+8. Se evaluó simplificar `Makefile` para compilar solo binarios activos, pero se mantuvo la versión original por decisión del equipo (compila todos los `*.c` detectados por `wildcard`).
 
 ## 📚 Documentación Final (CLI actual)
 
@@ -275,3 +277,27 @@ Si se decide mantener `main` sin incorporar todo el refactor de CLI:
 
 Con ese ajuste puntual, `main` quedaría robusto respecto al comportamiento esperado
 de `read()` en streams.
+
+## 🗂️ Refactor Final de Nombres (estado actual)
+
+### Archivos activos para uso del laboratorio
+
+- `encrypt.c` (proviene de la versión simplificada `encryptV2.c`)
+- `decrypt.c` (proviene de la versión simplificada `decryptV2.c`)
+- `democ.c`
+
+### Archivos de respaldo
+
+- `encryptV2.0.c` (implementación previa más completa)
+- `decryptV2.0.c` (implementación previa más completa)
+
+### Nota de Makefile (estado real)
+
+Actualmente, `Makefile` mantiene el esquema original con detección automática:
+
+```makefile
+SRC = $(wildcard *.c)
+PROGS=$(SRC:.c=)
+```
+
+Por lo tanto, también compila `encryptV2.0.c` y `decryptV2.0.c`.
