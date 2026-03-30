@@ -1,40 +1,124 @@
-## Plan: Refactor Clean Code Simple en C
+# 📋 Buenas Prácticas en C — Ayudamemoria
 
-Objetivo: mantener la funcionalidad actual y el cumplimiento de la consigna, mejorando legibilidad con cambios chicos, locales y fáciles de entender.
+## 📁 Organización del código
 
-**Pasos**
-1. Fase 1: baseline y criterios de no regresión.
-2. Validar baseline con los casos del README: encrypt+decrypt por argumento, por stdin y roundtrip de archivo.
-3. Fijar criterio de éxito: mismo comportamiento observable, misma interfaz de uso en terminal, mismo formato de datos.
-4. Fase 2: limpieza mínima en decrypt (depende de fase 1).
-5. Simplificar la escritura del byte real a una operación directa con control de error claro.
-6. Mantener lectura en bloques de 8 y validación de bloque incompleto.
-7. Fase 3: limpieza mínima en encrypt (depende de fase 1; paralelizable con fase 2).
-8. Extraer un helper pequeño para la lógica repetida de 7 bytes aleatorios + 1 byte real.
-9. Reemplazar número mágico 7 por una constante con nombre.
-10. Estandarizar éxito/error con EXIT_SUCCESS y EXIT_FAILURE.
-11. Mantener flujo simple de lectura byte a byte para no introducir complejidad innecesaria.
-12. Fase 4: validación final (depende de fases 2 y 3).
-13. Recompilar y verificar que no aparezcan warnings nuevos por el refactor.
-14. Repetir pruebas funcionales del README y roundtrip con archivo.
-15. Comparar resultado final con baseline para confirmar cero regresiones.
-16. Una vez verificado se agregan Comentarios para mejorar legibilidad del codigo.
+- Funciones auxiliares usadas **solo por un archivo** → van en ese mismo `.c`
+- Funciones **compartidas** entre varios archivos → archivo separado `utils.c` + `utils.h`
+- Estructura recomendada de un `.c`:
+  1. Comentario de cabecera
+  2. `#include`s
+  3. `#define`s y constantes
+  4. Prototipos de funciones auxiliares
+  5. `main()`
+  6. Definición de funciones auxiliares
 
-**Archivos relevantes**
-- encrypt.c — reducir duplicación y mejorar claridad con helper simple.
-- decrypt.c — simplificar escritura del byte real sin cambiar lógica principal.
-- README.md — fuente de verdad de la consigna y casos obligatorios.
-- Makefile — verificación de compilación y ejecución.
+---
 
-**Verificación**
-1. make clean && make all
-2. bin/encrypt hola | bin/decrypt debe devolver hola
-3. echo -n hola | bin/encrypt | bin/decrypt debe devolver hola
-4. bin/encrypt < topsecret.txt | bin/decrypt > recuperado.txt y luego diff topsecret.txt recuperado.txt
-5. Verificar factor 8 en tamaño de salida del encriptado para entradas pequeñas
-6. Confirmar que no se agregaron mecanismos rebuscados ni nuevos archivos innecesarios
+## 💬 Comentarios
 
-**Decisiones**
-- Incluido: legibilidad, consistencia de errores, eliminación de duplicación.
-- Excluido: optimizaciones avanzadas, modularización compleja, cambios criptográficos, cambios de interfaz.
-- Regla guía: código simple, didáctico y mantenible.
+- Comentá el **por qué**, no el **qué**
+- El código bien escrito ya dice qué hace
+- **Sí comentar:**
+  - Cabecera del archivo (qué hace, autor, fecha)
+  - Antes de cada función (parámetros, retorno, propósito)
+  - Lógica no obvia o decisiones de diseño
+- **No comentar:**
+  - Lo que ya es obvio leyendo el código (`i++; // incrementa i`)
+
+```c
+// MAL
+i = i + 1; // incrementa i
+
+// BIEN
+// Cada byte real va precedido por 7 bytes aleatorios (protocolo de encriptación)
+write(STDOUT_FILENO, randomBytes, RANDOM_PADDING);
+```
+
+---
+
+## 🏷️ Nomenclatura
+
+| Elemento | Convención C clásica | Alternativa aceptable |
+|----------|---------------------|-----------------------|
+| Variables y funciones | `snake_case` | `camelCase` |
+| Constantes y macros | `UPPER_CASE` | `UPPER_CASE` |
+
+> ⚠️ Lo más importante es ser **consistente** en todo el proyecto.
+
+---
+
+## ❌ Sin números mágicos
+
+```c
+// MAL
+write(STDOUT_FILENO, randomBytes, 7);
+
+// BIEN
+#define RANDOM_PADDING 7
+write(STDOUT_FILENO, randomBytes, RANDOM_PADDING);
+```
+
+---
+
+## ✅ Manejo de errores — siempre verificar retornos
+
+```c
+// MAL
+read(STDIN_FILENO, buffer, 1);
+
+// BIEN
+int bytesRead = read(STDIN_FILENO, buffer, 1);
+if (bytesRead < 0) {
+    perror("read");
+    exit(EXIT_FAILURE);
+}
+```
+
+- Usar siempre `perror()` para errores de syscalls y funciones de biblioteca
+- Usar `EXIT_SUCCESS` y `EXIT_FAILURE` en lugar de `0` y `1`
+
+---
+
+## 📦 Includes — solo los necesarios, en orden
+
+```c
+#include <stdio.h>      // perror
+#include <stdlib.h>     // rand, srand, exit
+#include <unistd.h>     // read, write, STDIN_FILENO, STDOUT_FILENO
+#include <time.h>       // time (para srand)
+```
+
+---
+
+## 🔧 Otras reglas importantes
+
+- Siempre **inicializá las variables** al declararlas
+- Declarar variables **al principio del bloque** (buena práctica en C89/C90)
+- Siempre incluir `return 0;` al final del `main()`
+- Verificar **todos** los retornos de `read()` y `write()` (pueden devolver menos bytes de los pedidos)
+- Usar `srand(time(NULL))` para inicializar la semilla aleatoria **una sola vez** al inicio del programa
+
+---
+
+## 🔁 Ejemplo de cabecera de archivo
+
+```c
+/*
+ * encrypt.c
+ * Encripta un mensaje precediendo cada byte con 7 bytes aleatorios.
+ * Autor: MiyoBran
+ * Fecha: 2026
+ */
+```
+
+---
+
+## 🔁 Ejemplo de cabecera de función
+
+```c
+/*
+ * encryptByte - escribe un byte encriptado en stdout
+ * @byte: el byte a encriptar
+ * Retorna: 0 en éxito, -1 en error
+ */
+```
