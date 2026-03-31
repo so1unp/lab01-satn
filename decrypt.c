@@ -28,7 +28,9 @@ int main() {
         // escribir el byte real (último byte)
         ssize_t written = 0;
         while (written < 1) {
-            ssize_t w = write(STDOUT_FILENO, &buffer[7] + written, 1 - written);
+            // Convertir explícitamente a size_t para evitar warning de signo
+            size_t remaining = (size_t)(1 - written);
+            ssize_t w = write(STDOUT_FILENO, &buffer[7] + written, remaining);
 
             if (w < 0) {
                 perror("write");

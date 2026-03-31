@@ -5,7 +5,8 @@
 #include <time.h>
 
 int main(int argc, char *argv[]) {
-    srand(time(NULL));
+    // Convertir time_t a unsigned int para srand
+    srand((unsigned int)time(NULL));
 
     char buffer[1];
     ssize_t n;
@@ -13,11 +14,12 @@ int main(int argc, char *argv[]) {
     // Caso 1: argumento por línea de comandos
     if (argc > 1) {
         char *msg = argv[1];
-        for (int i = 0; i < strlen(msg); i++) {
-
+        size_t msg_len = strlen(msg);  // Usar size_t para la longitud
+        
+        for (size_t i = 0; i < msg_len; i++) {
             // 7 bytes aleatorios
             for (int j = 0; j < 7; j++) {
-                char r = rand() % 256;
+                char r = (char)(rand() % 256);  // Conversión explícita
                 if (write(STDOUT_FILENO, &r, 1) != 1) {
                     perror("write");
                     exit(1);
@@ -34,9 +36,8 @@ int main(int argc, char *argv[]) {
     // Caso 2: stdin
     else {
         while ((n = read(STDIN_FILENO, buffer, 1)) > 0) {
-
             for (int j = 0; j < 7; j++) {
-                char r = rand() % 256;
+                char r = (char)(rand() % 256);  // Conversión explícita
                 if (write(STDOUT_FILENO, &r, 1) != 1) {
                     perror("write");
                     exit(1);
