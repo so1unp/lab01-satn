@@ -1,4 +1,69 @@
 #include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <time.h>
+
+int main(int argc, char *argv[]) {
+    srand(time(NULL));
+
+    char entrada;
+
+    if (argc > 1) {   
+        for (int i = 0; argv[1][i] != '\0'; i++) {
+            for (int j = 0; j < 7; j++) {
+                int basura = rand();
+                write(1, &basura, 1);
+            }
+         
+            write(1, &argv[1][i], 1);
+        }
+    } else {
+        int resultado = read(0, &entrada, 1);
+        while (resultado > 0) {        
+            for (int i = 0; i < 7; i++) {
+                int basura = rand();
+                write(1, &basura, 1);
+            }
+            
+            write(1, &entrada, 1);
+            
+            resultado = read(0, &entrada, 1);
+        }
+    }
+
+    return 0;
+}
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -49,7 +114,7 @@ int main(int argc, char *argv[]) {
                 exit(1);
             }
         }
-
+        
         if (n < 0) {
             perror("read");
             exit(1);
@@ -58,3 +123,4 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+*/
